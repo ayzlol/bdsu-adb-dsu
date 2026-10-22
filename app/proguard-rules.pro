@@ -1,0 +1,7 @@
+-keep class rikka.shizuku.** { *; }
+-keep interface rikka.shizuku.** { *; }
+-keep class rikka.shizuku.provider.** { *; }
+-keep class rikka.shizuku.aidl.** { *; }
+-keep class rikka.shizuku.IShizukuService { *; }
+-keep class rikka.shizuku.IShellProvider { *; }
+-dontwarn rikka.shizuku.**

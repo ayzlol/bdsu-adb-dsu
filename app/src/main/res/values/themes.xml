@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Bdsu" parent="android:Theme.Material.NoActionBar">
+        <item name="android:colorPrimary">#00D9FF</item>
+        <item name="android:colorBackground">#0A0E1A</item>
+        <item name="android:windowBackground">#0A0E1A</item>
+    </style>
+</resources>

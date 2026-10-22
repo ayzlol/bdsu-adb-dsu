@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Cleartext (HTTP) traffic is refused everywhere and only the system CA store is
+  trusted, so ROM downloads can only go out over verified TLS.
+
+  The certificate pin-set that used to live here matched nothing in GitHub's
+  live chain (github.com / objects.githubusercontent.com / release-assets all
+  presented Sectigo + USERTrust, none of the pinned SPKIs), which made Android
+  reject every TLS handshake to those hosts and blocked all downloads outright.
+  GitHub rotates leaf and intermediate certificates regularly, so pinning them
+  here is a standing outage waiting to happen; TLS validation plus the SHA-256
+  check on every image is what actually guarantees integrity.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
