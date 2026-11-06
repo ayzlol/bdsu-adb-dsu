@@ -21,3 +21,4 @@ If you like this project, giving it a star ⭐ or sharing it would mean a lot! Y
 * Even though DSU is safer than standard flashing, please proceed with caution. **I assume no responsibility for any potential issues or damages.**
 
 Wishing you all the best and good luck installing DSUs! :dddddd
+("I'm so sorry, the repo got completely mixed up with my old files. I hope I've cleaned up most of it. Really sorry to waste your time, that was so dumb of me)
