@@ -1,125 +1,101 @@
 # bDSU User Guide
 
-This guide explains how to install and use bDSU for the first time. The original project README is intentionally kept unchanged; this file provides the structured setup and usage steps separately.
+This guide explains how to prepare a device, connect bDSU to Shizuku, download or choose a ROM image, and start an Android DSU installation. The app's behavior and available catalog entries can change between releases; verify the details shown in the app and on the upstream ROM release page before installing.
 
-> **Important:** DSU support depends on the device, Android version, Treble implementation, ABI, partition layout, bootloader state, vendor firmware, and available storage. Read the warnings before starting. Keep a backup of important data and do not reboot while Android is still processing the DSU installation.
+> **Important:** DSU/GSI compatibility depends on the device model, Android build, Treble implementation, ABI, partition layout, bootloader state, vendor firmware, and free storage. bDSU displays its catalog without automatically filtering it for device compatibility. A successful download or installer launch does not guarantee that the image will boot. Keep a working recovery path and follow your device manufacturer's recovery instructions.
 
-## What you need
+## Requirements and preparation
 
-Before using bDSU, make sure that the phone has an unlocked bootloader, runs Android 10 or newer, supports Treble and DSU, and has enough free storage for the downloaded GSI, temporary image processing, and optional persistent Userspace storage.
+- bDSU supports Android API 29 (Android 10) and newer according to the current app configuration. Actual DSU availability varies by device and Android build.
+- The device must support the selected GSI and Android DSU implementation. An unlocked bootloader is commonly required for DSU use; bDSU does not unlock it or bypass device security.
+- Keep ample internal free space. Images can be large, and installation may need space for the downloaded archive, a decompressed image, a gzip staging copy, and optional DSU userdata. The app checks some staging-space conditions, but device storage behavior can vary.
+- Install and start [Shizuku](https://github.com/RikkaApps/Shizuku). bDSU uses Shizuku's authorized shell access for staging and launching DSU; it does not provide root or a privilege bypass.
+- Use only ROM images you trust and that are built for your device's architecture and partition type.
 
-You also need [Shizuku](https://github.com/RikkaApps/Shizuku) running with permission granted to bDSU. bDSU uses Shizuku for authorized shell access; it does not use an exploit or bypass Android security.
+## Install and start Shizuku
 
-## 1. Install bDSU
+Install Shizuku from its official project distribution and follow the setup instructions displayed by Shizuku. Depending on Android version and device, Shizuku can be started using Wireless debugging or a computer with ADB. Enable Developer options and the required debugging option in Android Settings if needed.
 
-Download the APK from the [GitHub v1.2 release](https://github.com/ayzlol/bdsu-adb-dsu/releases/tag/v1.2). If Android asks for permission to install from this source, allow the file manager or browser that opened the APK, then return to the installer.
+For ADB startup, use the commands and instructions provided by your installed Shizuku version. The startup method can change across Shizuku releases and manufacturer builds, so do not rely on a command copied from an unrelated device as a universal procedure.
 
-If an older package with the same application identity is already installed and Android reports a signature conflict, uninstall the old bDSU build or install the APK signed with the same key as the existing installation.
+Leave Shizuku's service running, then open bDSU and press **Connect Shizuku**. Approve the permission request in Shizuku. bDSU should report that the service is connected and permission is granted. If it does not, confirm that Shizuku is running and that bDSU has not been denied or had its permission revoked.
 
-## 2. Start Shizuku with ADB or Wireless debugging
+Shizuku is needed for DSU installation and launch. Browsing the catalog and downloading a catalog image use Android's DownloadManager and do not by themselves require Shizuku.
 
-Install Shizuku from its official project page and open it. Enable Developer options and USB debugging or Wireless debugging in Android Settings.
+## Review device information
 
-For Wireless debugging, pair Shizuku with the pairing code shown by Android. Follow Shizuku's own on-screen instructions because the exact menu names vary between Android versions and manufacturers.
+The device card can show the model, Android API level, primary ABI, bootloader information, DSU-loaded state, and storage-related information. Diagnostics may also report Treble and A/B indicators.
 
-For an ADB-connected computer, the general sequence is:
+These readings are informational. The app currently shows all catalog entries rather than filtering them by device, so compare the ROM's architecture and requirements with your device yourself. For example, an `arm64-ab` label alone does not establish that a specific phone is compatible. Consult the ROM publisher and device-specific community documentation before proceeding.
 
-```bash
-adb devices
-adb shell sh /sdcard/Android/data/moe.shizuku.privileged.api/start.sh
-```
+## Choose a ROM
 
-The exact Shizuku startup method can vary by Shizuku version and device. Use the method shown inside the Shizuku application if the command above is not available on your device.
+### Download a catalog build
 
-Return to bDSU after Shizuku reports that its service is running.
+1. Expand a ROM family in the catalog.
+2. Review the build label, Android version, architecture, and displayed size.
+3. Select the exact build you intend to use.
+4. Press the download button and allow the download to finish.
 
-## 3. Connect bDSU to Shizuku
+Catalog links are HTTPS GitHub release-download URLs. Downloads use Android DownloadManager and are stored in the app-specific Downloads directory. Wi-Fi-only downloading is enabled by default; change it in Settings only if you accept the mobile-data use. The app displays progress, speed, and estimated time, and may retry a failed download. A download has a four-hour timeout.
 
-Open bDSU and press **Connect Shizuku**. When the Shizuku permission dialog appears, allow bDSU. The status should show that Shizuku is connected and permission has been granted.
+When a catalog download finishes, bDSU checks its expected size and catalog SHA-256 when the catalog entry has a valid digest. The image is checked again during installation. A mismatch causes the catalog download to be rejected rather than passed to DSU. The app may also look for a publisher-hosted checksum file during installation; if a matching checksum is found, it is checked against the image.
 
-If the status does not change, open Shizuku and check that its service is running. Also check that bDSU has not been denied or revoked in Shizuku's application list.
+### Select a local image
 
-ROM downloading does not require Shizuku. Shizuku is required when bDSU prepares and starts the DSU installation.
+Use the local ROM picker to choose a file whose name ends in `.img`, `.img.xz`, or `.img.gz`. The filename suffix is used to determine the processing path; it does not prove that the file is a valid or compatible GSI. Only select a file from a source you trust.
 
-## 4. Check the detected device profile
+Local images are not blocked by catalog checksums. The app may display an advisory if a local filename appears to match a catalog build, but this is not a cryptographic integrity verification. The document provider must keep the selected file accessible while installation is being prepared.
 
-The device card shows information such as the manufacturer, model, Android/API level, ABI, Treble status, and available storage. Only choose a ROM that matches the device's architecture and GSI requirements.
+## Optional settings and userdata
 
-A ROM marked `arm64-ab` is not automatically compatible with every arm64 phone. The device must also support the required Treble and partition configuration. If the application marks the device as unsupported, do not force the installation.
+After selecting or completing a ROM, bDSU asks whether to allocate persistent DSU userdata. Selecting temporary userdata does not request a persistent userdata size. Persistent userdata options begin at 3 GB and are offered only when the app's available-space estimate permits them, up to 50 GB. The estimate reserves space for image staging and other overhead; actual requirements can differ by device.
 
-## 5. Select and download a ROM
+Settings include:
 
-Choose a ROM family from the catalog, such as crDroid or LineageOS, to open its drawer. Select one of the device-compatible versions shown inside the drawer, then press **Download selected ROM**. bDSU keeps the ROM's actual filename instead of renaming every file to `bdsu.img`.
+- **Wi-Fi only download:** enabled by default; controls whether downloads may use metered networks.
+- **Use phone colors:** uses Android dynamic colors on Android 12 and newer when enabled; otherwise the app uses its blue theme.
+- **Use SD card for DSU staging:** available when removable app-specific storage is detected. It is off by default. This is for temporary image staging, not for moving DSU userdata.
+- **System DSU Loader screens:** an optional system setting controlled through Shizuku on supported builds.
 
-The application shows the download percentage, current operation, speed, estimated time, and system notification. You can press **Cancel** while downloading. If a catalog link is unavailable, use **Choose local ROM** and select a compatible `.img` or `.img.xz` file that you already downloaded or built. Other formats are rejected by the picker and by the install pipeline.
+A device may expose removable storage to the app but not to the Shizuku shell process. If SD staging cannot be read or used, bDSU may retry from internal app-specific storage. Ensure internal storage has enough room for this fallback.
 
-Do not rename a compressed archive manually unless you know its format. A file extension does not make an image compatible with DSU.
+## Install into DSU
 
-## 6. Configure optional Userspace storage
+1. Confirm the selected image is the intended build and Shizuku is connected with permission granted.
+2. Review the userdata choice and staging settings.
+3. Press **Install into DSU** once and keep the app and Shizuku available while the operation runs.
+4. Watch the progress panel for verification, decompression/copying, staging, and launch status.
+5. When Android's DSU verification/installer screen appears, review its information and follow its instructions. bDSU does not silently reboot the phone.
 
-The Userspace control appears after a ROM has been selected or downloaded. Persistent Userspace is optional.
+The app prepares the image in app-specific staging. Depending on image type and device support, it may use an optimized path, including converting an XZ image to gzip in one pass. The primary launch route places a gzip payload in the public Downloads directory and starts Android's DSU VerificationActivity through Shizuku. If that route fails, the app may try a legacy launch using the staged image. Files needed by the system installer are not removed immediately after the confirmation screen is opened.
 
-When it is disabled, bDSU starts DSU without requesting persistent user storage. When it is enabled, select a value between **3 GB** and the maximum amount offered by the application. The maximum is limited by available device storage and cannot exceed 50 GB.
+Do not delete staging files or force-stop bDSU while installation is preparing the image. Keep sufficient free space in public Downloads as well as in the selected staging location.
 
-After you press **Install into DSU**, the Userspace control is locked for that operation. Do not change the value or delete the staging files while installation is in progress.
+## Downloads, errors, and recovery
 
-## SD-card staging
+You can cancel a download while it is active. The install-preparation action is not presented as safely cancellable once it has started; do not force-stop the app or interrupt Shizuku during that work.
 
-After a ROM has been selected or downloaded, the **Use SD card for DSU staging** option appears. It is off by default. On a device without removable storage, the option remains disabled and displays **No SD card detected on this device**. When enabled on a compatible device, the SD card is used for temporary image staging; Android’s official DSU service still performs the final installation through Shizuku. bDSU checks that the staging directory is writable. If the Shizuku shell cannot access the removable path, bDSU retries with internal app-specific staging and reports that fallback instead of silently continuing.
+If something fails, note the exact status and stage shown in the app. Open **Debug & Diagnostics** for device, storage, and Shizuku information. Common areas to check include:
 
-SD-card staging space and persistent DSU Userspace are separate. The Userspace slider is limited by internal device storage because Android’s DSU userdata allocation is not automatically moved to the SD card. SD-card free space increases only the temporary staging capacity shown by the application.
-
-## 7. Install into DSU
-
-Confirm that Shizuku is connected and that the selected ROM is complete. Press **Install into DSU** once.
-
-The progress panel reports the current stage, for example:
-
-```text
-Preparing image
-Decompressing image
-Staging image
-Validating compressed image
-Creating DSU configuration
-Starting DSU installer
-```
-
-The action can take time because a large image may need to be decompressed and copied. Keep bDSU and Shizuku available in the background and do not force-stop either application.
-
-When Android's DSU installer appears, read its own confirmation screen carefully. Do not reboot until the installer has finished. bDSU does not silently reboot the phone.
-
-## 8. Cancel or recover from an error
-
-Use **Cancel** while an operation is active. bDSU should stop the active download or shell operation and remove temporary files. If an error appears, open the debug details and record the stage, exit code, file path, and raw result.
-
-Useful distinctions include:
-
-| Error | Likely area to inspect |
+| Symptom | Checks |
 |---|---|
-| Download failed | URL, network, redirect, TLS, Download Manager, or storage |
-| Shizuku permission required | Shizuku service or bDSU permission state |
-| Image is empty or incomplete | Download interruption or invalid local file |
-| gzip/XZ error | Archive format or device decompression support |
-| DSU installer failed | Device DSU/dynsystem support, staging path, image metadata, or vendor firmware |
-| Phone returns to the lock screen | Stop retrying; investigate device firmware and DSU compatibility before another attempt |
+| Download fails or times out | Network access, free storage, DownloadManager status, and whether the upstream release asset is still available. |
+| Size or SHA-256 mismatch | Do not install that downloaded file. Remove/re-download it and confirm the catalog entry still refers to the intended upstream asset. |
+| Shizuku permission required | Start Shizuku and grant or re-grant bDSU permission. |
+| Unsupported local file | Use a readable `.img`, `.img.xz`, or `.img.gz` file and keep its filename extension intact. |
+| Not enough staging space | Free storage, use the optional SD staging setting if available, or choose a smaller image/userdata allocation. |
+| DSU launch fails | Check DSU availability, the device's vendor build, Shizuku access to the staged path, and the ROM's device requirements. |
 
-If the phone soft-bricks or repeatedly returns to the lock screen, stop using DSU immediately and recover the normal system using the device manufacturer's documented recovery method. Do not repeatedly press **Install into DSU**.
+If the device fails to boot or repeatedly returns to the previous system, stop retrying the image. Use the recovery process documented by your device manufacturer and seek device-specific support. Do not assume that opening the DSU installer means the image is safe or will boot.
 
-## 9. Build from source
+## Build from source
 
-Developers can clone and build the project using the instructions in [BUILDING.md](BUILDING.md):
-
-```bash
-git clone https://github.com/ayzlol/bdsu-adb-dsu.git
-cd bdsu-adb-dsu
-./gradlew clean test assembleRelease
-```
-
-The source code, Gradle wrapper, GPLv3 license, build notes, and third-party notices are available in the repository. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) before redistributing modified builds.
+See [BUILDING.md](BUILDING.md) for JDK, Android SDK, Gradle, and release-signing details. Review [SOURCE_CODE_GUIDE.md](SOURCE_CODE_GUIDE.md), [ROM_SOURCES.md](ROM_SOURCES.md), and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for implementation and redistribution information.
 
 ## References
 
-1. [Shizuku official project](https://github.com/RikkaApps/Shizuku)
-2. [Android Generic System Image documentation](https://developer.android.com/topic/generic-system-image)
-3. [bDSU GitHub repository](https://github.com/ayzlol/bdsu-adb-dsu)
-4. [bDSU v1.2 release](https://github.com/ayzlol/bdsu-adb-dsu/releases/tag/v1.2)
+- [Shizuku](https://github.com/RikkaApps/Shizuku)
+- [Android Generic System Image documentation](https://developer.android.com/topic/generic-system-image)
+- [Android Dynamic System Updates](https://source.android.com/docs/core/ota/dynamic-system-updates)
+- [bDSU repository](https://github.com/ayzlol/bdsu-adb-dsu)
