@@ -10,11 +10,12 @@ The project is licensed under GPL-3.0-or-later; see [`LICENSE`](LICENSE). Third-
 |---|---|
 | `app/src/main/java/com/bdsu/app/MainActivity.kt` | Main activity, Compose UI, ROM catalog, device information, Shizuku shell bridge, download monitoring, checksum verification, staging, and DSU launch. |
 | `app/src/main/AndroidManifest.xml` | App permissions, Shizuku package visibility, launcher activity, and Shizuku provider declaration. |
-| `app/src/main/res/` | App theme, strings/colors, icons, backup rules, and network security configuration. |
+| `app/src/main/res/` | App theme, strings, icons, and network security configuration. |
 | `app/build.gradle.kts` | Android application ID, SDK levels, version, release signing configuration, and dependencies. |
 | `build.gradle.kts`, `settings.gradle.kts` | Root Gradle plugin and project configuration. |
 | `gradle/libs.versions.toml` | Version catalog for Gradle plugins and libraries. |
 | `app/proguard-rules.pro` | Keep rules required for Shizuku under release shrinking/obfuscation. |
+| `MODIFICATIONS.txt` | GPL-3.0 section 5(a) modification notice and detailed change log for 1.3.3. |
 | `USER_GUIDE.md` | End-user setup and usage guidance. |
 | `BUILDING.md` | Build requirements and commands. |
 | `ROM_SOURCES.md` | Notes about ROM catalog sources and release assets. |
@@ -23,11 +24,11 @@ The project is licensed under GPL-3.0-or-later; see [`LICENSE`](LICENSE). Third-
 
 ### Device information
 
-`DeviceProfile` and `detectDevice()` collect device model, Android API level, primary ABI, available data storage, Treble/A-B indicators, bootloader state, and whether a DSU image appears to be loaded. System properties are read with `getprop`. This information is displayed for the user and diagnostics; **the current UI does not filter catalog entries by device compatibility**. A listed image is not a guarantee that it will boot on a particular device.
+`DeviceProfile` and `detectDevice()` collect device model, Android API level, primary ABI, available data storage, Treble/A-B indicators, bootloader state, and whether a DSU image appears to be loaded. System properties are read from one cached `getprop` snapshot (the 1.3.3 change replaced one process per property), and storage/property failures fall back to safe defaults instead of throwing. This information is displayed for the user and diagnostics; **the current UI does not filter catalog entries by device compatibility**. A listed image is not a guarantee that it will boot on a particular device.
 
 ### ROM catalog and selection
 
-`RomOption` describes a catalog item: family, display/version label, Android version, architecture label, expected compressed byte size, release URL, SHA-256 digest, and minimum API metadata. `romCatalog` currently contains 16 entries grouped by family in the UI. The UI shows the catalog unfiltered; the architecture and labels are informational and should not be treated as an automatic compatibility check.
+`RomOption` describes a catalog item: family, display/version label, Android version, architecture label, expected compressed byte size, release URL, SHA-256 digest, and minimum API metadata. `romCatalog` currently contains 19 entries grouped into seven families in the UI (PixelOS, VoltageOS, and the Android 16 crDroid build were added in 1.3.3). The UI shows the catalog unfiltered; the architecture and labels are informational and should not be treated as an automatic compatibility check.
 
 Before a catalog download is queued, `isAllowedRomUrl()` restricts its URL to HTTPS GitHub release-download paths. When updating the catalog, maintainers should independently check that the upstream asset exists and that its URL, file size, digest, architecture, and release information all correspond to the same file. A digest must be a complete 64-character hexadecimal SHA-256 value.
 
@@ -36,6 +37,8 @@ Before a catalog download is queued, `isAllowedRomUrl()` restricts its URL to HT
 Catalog assets are downloaded with Android `DownloadManager` into app-specific external Downloads storage. The UI monitors progress, offers Wi-Fi-only behavior, and retries failed requests. Downloads are subject to a timeout.
 
 After download completion, the app checks the expected file size and SHA-256 when the catalog entry contains a valid digest. Installation performs another size and SHA-256 check immediately before staging, so a changed or truncated file is rejected. During installation, the app also looks for publisher-hosted companion checksum files; when a matching checksum is found, it is checked against the already-computed digest. If no publisher checksum is available, the catalog SHA-256 remains the integrity reference. A catalog download without a valid SHA-256 is not installable.
+
+The download monitor runs inside a guarded coroutine: DownloadManager/cursor failures are reported in the status panel instead of escaping as an app crash. The 1.3.3 notification integration mirrors install phases into a low-importance "DSU operations" channel; see [`MODIFICATIONS.txt`](MODIFICATIONS.txt) section 4.
 
 Local files are intentionally treated differently: the user selects and supplies them, so the app does not block local installation based on a catalog or publisher checksum. A possible catalog match is informational only, not a verification claim.
 
@@ -47,13 +50,15 @@ The selected URI is retained with a persistable read permission when the documen
 
 ### Shizuku shell boundary
 
-`Shell` checks Shizuku binder and permission state before privileged operations. It invokes Shizuku's process implementation and runs shell commands through that authorized process; the app does not implement root exploits or bootloader privilege bypasses. The shell bridge merges stderr into stdout, reads output on a worker thread, limits captured output, and destroys the process if its coroutine is cancelled.
+`Shell` checks Shizuku binder and permission state before privileged operations. It invokes Shizuku's process implementation and runs shell commands through that authorized process; the app does not implement root exploits or bootloader privilege bypasses. The shell bridge merges stderr into stdout, reads output on a worker thread, limits captured output, destroys the process if its coroutine is cancelled, and (since 1.3.3) kills a command that exceeds a 30-minute watchdog window so a stalled `gzip`/`am` child cannot hang the installation forever.
 
 The implementation resolves Shizuku's `newProcess(String[], String[], String)` method reflectively. The Shizuku keep rules in `app/proguard-rules.pro` are significant for minified release builds. The manifest's Shizuku API permission and provider declaration are also needed for binder delivery and permission requests.
 
 ### Staging and DSU launch
 
 `installFromStream()` and `prepareImageFile()` stage the image in app-specific storage. Internal app storage is the default. If removable app-specific storage is available and the user enables SD staging, that location is used; when the shell cannot access the staged SD file, the flow can copy it to internal staging and retry. The code checks available space where possible, limits decompressed image size, caps XZ decoder memory, and uses buffered streaming rather than loading multi-gigabyte images into memory.
+
+The decompressed-size limit is 4 GB by default and is controlled by the **Allow images larger than 4 GB** setting (`allow_large_images` in `settings` SharedPreferences). When enabled, the limit rises to a 64 GB absolute ceiling. The same check is applied to the single-pass XZ-to-gzip path and to the generic streaming path; local `.img.gz` fast-path candidates are pre-screened with the gzip ISIZE trailer. This setting only controls bDSU's guard — the system DSU service has its own limits.
 
 The launch sequence prefers the documented DSU verification flow:
 
@@ -67,9 +72,9 @@ Persistent userdata is optional. The UI offers presets from 3 GB upward, limited
 
 ### UI and preferences
 
-The interface is built with Jetpack Compose and Material 3. `BdsuTheme()` uses Android dynamic colors on Android 12+ when enabled, and otherwise uses the app's blue color scheme. Settings include Wi-Fi-only downloads, dynamic colors, optional SD staging when available, and the system DSU Loader flag. User choices are stored in app `SharedPreferences`.
+The interface is built with Jetpack Compose and Material 3. `BdsuTheme()` uses Android dynamic colors on Android 12+ when enabled, and otherwise uses the app's blue color scheme. Settings include Wi-Fi-only downloads, dynamic colors, optional SD staging when available, the system DSU Loader flag, and the 4 GB image-size override. User choices are stored in app `SharedPreferences`.
 
-The Shizuku status is observed through binder/permission listeners and a periodic refresh. The UI also includes download/install progress, device diagnostics, and a license/disclaimer dialog.
+The Shizuku status is observed through binder/permission listeners and a 3-second safety poll. The UI also includes download/install progress, device diagnostics, and a license/disclaimer dialog. During DSU preparation, the `BdsuNotifier` object mirrors each phase into a single low-importance English notification on the `bdsu_dsu_progress` channel; notification failures never interrupt installation.
 
 ## Maintenance notes
 

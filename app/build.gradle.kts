@@ -8,7 +8,9 @@ android {
     compileSdk = 34
     signingConfigs {
         create("release") {
-            val storeFile = file("bdsu-release.keystore")
+            // The signing key is never copied into the source tree. Point the build
+            // at it with BDSY_KEYSTORE_FILE (or place bdsu-release.keystore in app/).
+            val storeFile = file(System.getenv("BDSY_KEYSTORE_FILE") ?: "bdsu-release.keystore")
             val storePassword = System.getenv("KEYSTORE_PASSWORD") ?: System.getProperty("keystore.password") ?: ""
             val keyAlias = "bdsu"
             val keyPassword = System.getenv("KEY_PASSWORD") ?: System.getProperty("key.password") ?: ""
@@ -24,8 +26,8 @@ android {
         applicationId = "com.ayzlol.bdsu"
         minSdk = 29
         targetSdk = 34
-        versionCode = 114
-        versionName = "1.3.2"
+        versionCode = 119
+        versionName = "1.3.6"
     }
     buildTypes {
         release {

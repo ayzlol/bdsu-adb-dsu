@@ -22,6 +22,7 @@ The project also uses Android platform APIs and libraries brought transitively b
 When redistributing bDSU or a modified build:
 
 - Preserve the applicable GPL notices and provide the corresponding source as required by the GPL.
+- Preserve [`MODIFICATIONS.txt`](MODIFICATIONS.txt) and the modification notices in changed source files; they document the 1.3.3 changes under GPL-3.0 section 5(a).
 - Preserve applicable third-party copyright and license notices.
 - Check current upstream license terms and include any required notices in the redistributed package or accompanying materials.
 - Do not publish private signing keys, keystore passwords, or other credentials.

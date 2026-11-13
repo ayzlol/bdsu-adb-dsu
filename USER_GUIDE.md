@@ -55,8 +55,11 @@ Settings include:
 
 - **Wi-Fi only download:** enabled by default; controls whether downloads may use metered networks.
 - **Use phone colors:** uses Android dynamic colors on Android 12 and newer when enabled; otherwise the app uses its blue theme.
+- **Allow images larger than 4 GB:** off by default. When off, bDSU rejects an image whose decompressed size would exceed 4 GB. When on, bDSU accepts images up to a 64 GB absolute ceiling. This only changes bDSU's own staging guard; your device's DSU implementation may still refuse large images. The switch is locked while an installation is running.
 - **Use SD card for DSU staging:** available when removable app-specific storage is detected. It is off by default. This is for temporary image staging, not for moving DSU userdata.
 - **System DSU Loader screens:** an optional system setting controlled through Shizuku on supported builds.
+
+The catalog currently contains 19 builds across AOSP, DerpFest, ArrowOS, crDroid, LineageOS, PixelOS and VoltageOS families. The three newest entries (PixelOS 16.2, VoltageOS 5.11 EXT4 and crDroid 12.12 Vanilla) use published SHA-256 digests, but a valid digest is not a compatibility guarantee.
 
 A device may expose removable storage to the app but not to the Shizuku shell process. If SD staging cannot be read or used, bDSU may retry from internal app-specific storage. Ensure internal storage has enough room for this fallback.
 
@@ -65,7 +68,7 @@ A device may expose removable storage to the app but not to the Shizuku shell pr
 1. Confirm the selected image is the intended build and Shizuku is connected with permission granted.
 2. Review the userdata choice and staging settings.
 3. Press **Install into DSU** once and keep the app and Shizuku available while the operation runs.
-4. Watch the progress panel for verification, decompression/copying, staging, and launch status.
+4. Watch the progress panel for verification, decompression/copying, staging, and launch status. The same English phase messages are also shown in an ongoing **DSU operations** notification so you can leave the app while a large image is prepared; allow notifications on Android 13+ if you want to see them.
 5. When Android's DSU verification/installer screen appears, review its information and follow its instructions. bDSU does not silently reboot the phone.
 
 The app prepares the image in app-specific staging. Depending on image type and device support, it may use an optimized path, including converting an XZ image to gzip in one pass. The primary launch route places a gzip payload in the public Downloads directory and starts Android's DSU VerificationActivity through Shizuku. If that route fails, the app may try a legacy launch using the staged image. Files needed by the system installer are not removed immediately after the confirmation screen is opened.
@@ -85,6 +88,8 @@ If something fails, note the exact status and stage shown in the app. Open **Deb
 | Shizuku permission required | Start Shizuku and grant or re-grant bDSU permission. |
 | Unsupported local file | Use a readable `.img`, `.img.xz`, or `.img.gz` file and keep its filename extension intact. |
 | Not enough staging space | Free storage, use the optional SD staging setting if available, or choose a smaller image/userdata allocation. |
+| "Decompressed image exceeds the 4 GB safety limit" | Enable **Allow images larger than 4 GB** in Settings if you really need the larger build, and make sure free storage is sufficient. The device's DSU service may still reject it. |
+| DSU progress notification is missing | Allow notifications for bDSU on Android 13+, and check that the "DSU operations" channel is not muted. The in-app progress panel always shows the same status. |
 | DSU launch fails | Check DSU availability, the device's vendor build, Shizuku access to the staged path, and the ROM's device requirements. |
 
 If the device fails to boot or repeatedly returns to the previous system, stop retrying the image. Use the recovery process documented by your device manufacturer and seek device-specific support. Do not assume that opening the DSU installer means the image is safe or will boot.

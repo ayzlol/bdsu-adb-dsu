@@ -1,0 +1,600 @@
+================================================================================
+ bDSU (adb-dsu) — MODIFICATION NOTICE
+ Version 1.3.6 (versionCode 119)
+ Modification date: 2026-11-09
+================================================================================
+
+bDSU - Android DSU sideloader
+Copyright (C) 2025-2026 unfayd and ayzlol (the_pan)
+
+SPDX-License-Identifier: GPL-3.0-or-later
+
+This file is the prominent modification notice required by section 5(a) of the
+GNU General Public License, version 3. It records who changed the work, when the
+changes were made, and what the changes are. It is not a replacement for the
+license itself. The complete license text is in the LICENSE file
+distributed with this repository (GPL-3.0). If the file is missing, see
+<https://www.gnu.org/licenses/>.
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+The changes below were prepared by the bDSU 1.3.3 maintenance work. They are
+released under the same GPL-3.0-or-later terms as the rest of the project.
+No warranty is added or removed by this notice.
+
+--------------------------------------------------------------------------------
+ 1. SUMMARY OF THE 1.3.3 CHANGE SET
+--------------------------------------------------------------------------------
+
+   * Three additional, SHA-256 verified ROM builds in the in-app catalog.
+   * English progress notifications for every DSU preparation and launch step.
+   * A user-controlled setting for the 4 GB decompressed-image limit.
+   * Stability, crash-safety and performance improvements across device
+     probing, download monitoring, shell execution, staging and the UI.
+   * Removal of unused sample resources and stale build/helper files.
+   * Documentation and license-notice updates.
+
+No new runtime permissions were introduced. POST_NOTIFICATIONS was already
+declared in AndroidManifest.xml; 1.3.3 finally uses it for DSU progress. The
+only added manifest permission is DOWNLOAD_WITHOUT_NOTIFICATION, a normal
+install-time permission that lets bDSU hide the duplicate DownloadManager
+notification while it mirrors the same gauge itself. No new third-party
+libraries were added. The notification code uses
+androidx.core.app.NotificationCompat, which is already present through the
+existing androidx.core:core-ktx dependency.
+
+--------------------------------------------------------------------------------
+ 2. FILES MODIFIED
+--------------------------------------------------------------------------------
+
+The following files contain modifications made on 2026-11-08 for version
+1.3.3. Each source file that carries a license header also carries a short
+"Modified: 2026-11-08 (bDSU 1.3.3)" note pointing to this document.
+
+  app/src/main/java/com/bdsu/app/MainActivity.kt
+      Main application logic and Compose UI. All functional changes listed in
+      sections 3-8 are implemented here.
+
+  app/build.gradle.kts
+      versionCode 114 -> 118, versionName "1.3.2" -> "1.3.5". The release
+      signing key is read from BDSY_KEYSTORE_FILE (or app/bdsu-release.keystore)
+      so the key itself is never copied into the source tree.
+
+  app/src/main/java/com/bdsu/app/XzSize.kt
+      New helper that reads the real uncompressed size from the XZ Index or the
+      gzip ISIZE field without decompressing the image. Returns -1 when the
+      metadata cannot be trusted so callers can show indeterminate progress.
+
+  app/src/test/java/com/bdsu/app/XzSizeTest.kt
+      JVM tests for the size reader (exact XZ size, gzip ISIZE, garbage input).
+
+  app/src/main/res/drawable/app_icon.png
+      Replaced with the 256x256 launcher icon supplied for this revision.
+
+  app/src/main/AndroidManifest.xml
+      android:label now references @string/app_name instead of the duplicated
+      hard-coded literal "bDSU". MainActivity declares
+      configChanges="orientation|screenSize|screenLayout|keyboardHidden|uiMode"
+      so a rotation or theme change during a long DSU staging operation does not
+      recreate the activity and cancel its coroutine. No permission or component
+      changes.
+
+  app/src/main/res/values/strings.xml
+      app_name value normalized to "bDSU" (was "bdsu") and now actually used by
+      the manifest.
+
+  README.md
+      Added a "What's new in 1.3.3" section describing the new catalog entries,
+      notifications, the image-size setting, stability work and cleanup.
+
+  ROM_SOURCES.md
+      Catalog table and counts updated for the three new builds; documented the
+      SHA-256 provenance (GitHub release-asset digest) and the DSU caveats that
+      upstream publishes for the new Android 16 releases.
+
+  SOURCE_CODE_GUIDE.md
+      Updated entry counts, the new notification subsystem, the image-size
+      preference, crash guards and the current project map.
+
+  USER_GUIDE.md
+      Documented the new Settings switch, English progress notifications and
+      the three new catalog families.
+
+  MODIFICATIONS.txt
+      This file (new).
+
+--------------------------------------------------------------------------------
+ 3. NEW ROM CATALOG ENTRIES (3 BUILDS, ALL SHA-256 VERIFIED)
+--------------------------------------------------------------------------------
+
+The in-app catalog grew from 16 to 19 builds. All three new entries are
+arm64-ab Android 16 GSI images hosted as GitHub release assets. The SHA-256
+values below are the exact asset digests reported by the GitHub Releases API
+("digest": "sha256:...") for the uploaded files. They are therefore digests of
+the same bytes the download URL serves, not hashes copied from an unrelated
+build or variant.
+
+  Family:       PixelOS
+  Display:      16.2 • 2026-06-28 • Official
+  Android:      Android 16
+  Architecture: arm64-ab
+  Size:         1,443,102,408 bytes
+  URL:          https://github.com/Doze-off/PixelOS_GSI_treble/releases/download/
+                2026-06-28/PixelOS-16.2-GSI_treble_arm64-ab-20260628.img.xz
+  SHA-256:      d159c206695722765de147ec59de10c1c2d130e218aa034fb40f4f6fd3727752
+
+  Family:       VoltageOS
+  Display:      5.11 • 2026-07-11 • EXT4
+  Android:      Android 16
+  Architecture: arm64-ab
+  Size:         896,814,284 bytes
+  URL:          https://github.com/Doze-off/voltage_a16_treble/releases/download/
+                2026-07-11-hotfix/Voltage-5.11-GSI_treble_arm64-ab-EXT4-20260711-hotfix.img.xz
+  SHA-256:      0cae08c3d51020cf556e369a8294f26b7f3fb99f66fd9f4982d738e7cfbd8efd
+
+  Family:       crDroid
+  Display:      12.12 • 2026-09-22 • Vanilla
+  Android:      Android 16
+  Architecture: arm64-ab
+  Size:         974,151,100 bytes
+  URL:          https://github.com/Doze-off/crdroid_gsi_treble/releases/download/
+                2026-09-22/crDroid-12.12-GSI_treble_arm64-ab-VANILLA-20260922.img.xz
+  SHA-256:      b0797c0c93b7fbfbae4cec0e7440fd6f0527abbbc891cc57ac186445d5ef5871
+
+Behavior for these entries is identical to the existing catalog entries:
+
+  * The URL must pass isAllowedRomUrl(): HTTPS, host github.com, path contains
+    "/releases/download/".
+  * DownloadManager fetches the asset into app-specific external storage.
+  * After completion the expected byte size is checked, then the SHA-256 is
+    computed and compared fail-closed. A mismatch deletes the file and never
+    reaches the DSU installer.
+  * installDsu() re-checks the size and SHA-256 immediately before staging.
+  * fetchPublisherChecksum() may additionally validate a publisher-hosted
+    checksum file when the upstream release provides one.
+
+Upstream note: the three builds are published by the same maintainer as the
+existing LineageOS entries (Doze-off). Some of that maintainer's releases
+include a note that certain old devices may need an upstream "init" file for
+DSU boot. bDSU cannot apply vendor-specific init files automatically. The
+catalog entry only means the asset URL and digest are valid; it is not a
+compatibility guarantee for every device. See section 11.
+
+--------------------------------------------------------------------------------
+ 4. DSU PROGRESS NOTIFICATIONS (ENGLISH)
+--------------------------------------------------------------------------------
+
+New type: BdsuNotifier (private object in MainActivity.kt).
+
+Purpose: while bDSU verifies, decompresses, repackages, stages and launches a
+DSU image, the same English phase strings that appear in the in-app progress
+panel are also mirrored to one ongoing Android notification. This keeps the
+operation visible when the user switches apps or turns the screen off.
+
+Implementation details:
+
+  * Channel ID: "bdsu_dsu_progress"
+  * Channel name: "DSU operations"
+  * Importance: IMPORTANCE_LOW (silent, no vibration, no badge)
+  * Notification ID: 4101 (one notification per operation, updated in place)
+  * Title while running: "bDSU • DSU operation"
+  * Title on success:    "bDSU • DSU installer started"
+  * Title on failure:    "bDSU • DSU operation failed"
+  * Uses NotificationCompat.BigTextStyle so long error strings remain readable.
+  * setOnlyAlertOnce(true) and setSilent(true) prevent repeated sounds.
+  * setProgress(100, percent, false) shows a determinate progress bar.
+  * Tapping the notification opens MainActivity.
+  * On success/failure the notification becomes non-ongoing and auto-cancels.
+  * Every notification call is wrapped in runCatching. If the user denied
+    POST_NOTIFICATIONS, or the notification service is unavailable, the DSU
+    operation continues normally and no crash occurs.
+  * The channel is created in MainActivity.onCreate(); stale notifications from
+    a killed process are cancelled at startup.
+  * The progress callback now throttles updates: the UI and notification are
+    only touched when the percentage or phase string actually changes.
+
+The notification is started at "Preparing DSU installer" (0%) and updated for
+phases such as:
+  - Verifying digests / Verifying digests: N%
+  - SHA-256 verified (catalog) / Checking publisher checksum
+  - Decompressing image (xz/gzip) / Reading local image
+  - Repackaging for DSU / Compressing image for DSU installer
+  - Copying gzip image into Download
+  - Documented DSU flow unavailable; trying legacy DSU launch
+  - DSU installer started
+
+Android 13+ still requires the runtime POST_NOTIFICATIONS grant. The app asks
+for it on first launch (existing behavior, now guarded by an explicit
+checkSelfPermission call). If it is denied, the in-app progress panel remains
+the source of truth.
+
+--------------------------------------------------------------------------------
+ 5. USER-CONTROLLED 4 GB IMAGE LIMIT
+--------------------------------------------------------------------------------
+
+Previous behavior: prepareImageFile() always rejected an image whose
+decompressed output exceeded 4 GiB (MAX_DECOMPRESSED_SIZE). The single-pass
+XZ-to-gzip and local-gzip fast paths did not enforce the same check, so the
+limit was inconsistent.
+
+New behavior:
+
+  * New Settings switch: "Allow images larger than 4 GB".
+  * Stored in SharedPreferences ("settings") under the key
+    "allow_large_images"; default false.
+  * When OFF (default): the 4 GB cap is enforced during streaming
+    decompression and during the single-pass XZ -> gzip repackaging. A clear
+    English error tells the user how to enable the option.
+  * When ON: the cap rises to an absolute 64 GB safety ceiling
+    (ABSOLUTE_MAX_DECOMPRESSED_SIZE) which only guards against corrupt or
+    hostile streams claiming an impossible size.
+  * The setting is passed through the complete pipeline:
+    installDsu -> installFromStream -> prepareImageFile
+    installDsu -> stageDownloadAsGz
+    installLocalDsu -> installFromStream -> prepareImageFile
+    installLocalDsu -> copyUriToPublicGz (pre-checked from the gzip trailer)
+  * For local .img.gz files the gzip ISIZE trailer is checked before the fast
+    copy path is used. The trailer stores the size modulo 4 GiB, so the generic
+    streaming path re-checks the real decompressed byte count for images above
+    that boundary.
+  * The UI warns that the device's DSU implementation may still refuse images
+    above 4 GB even when the bDSU guard is disabled.
+
+The switch is disabled while an installation is running, so the limit cannot
+change halfway through a staging operation.
+
+--------------------------------------------------------------------------------
+ 6. STABILITY AND CRASH-SAFETY CHANGES
+--------------------------------------------------------------------------------
+
+  1) Device probing (detectDevice)
+     - StatFs, ABI and getprop reads now degrade to safe defaults instead of
+       throwing during the first composition.
+     - Six separate `getprop <key>` process spawns were replaced by one cached
+       `getprop` snapshot parsed into a Map. Fewer processes, less memory and
+       less chance of an ANR on slow devices.
+
+  2) Shizuku shell bridge (Shell.run)
+     - Added a 30-minute watchdog thread per command. If `gzip`, `am` or another
+       child process stalls, it is destroyed and the caller receives a
+       "[timeout]" result instead of a coroutine that hangs forever.
+     - The watchdog is interrupted and the child streams are closed on normal
+       completion or cancellation.
+     - Existing merged stdout/stderr behavior and the 4 MB output cap were
+       preserved.
+
+  3) Download monitor
+     - The entire LaunchedEffect polling loop is wrapped in try/catch.
+       DownloadManager or cursor exceptions can no longer escape the effect and
+       crash the process; the UI reports "Download monitor stopped: ..."
+       instead.
+     - queryDownload() failures are treated as a missing snapshot.
+     - manager.remove() calls are guarded with runCatching.
+     - Polling of Shizuku status was reduced from 1500 ms to 3000 ms; the
+       binder/permission listeners still update the UI immediately.
+
+  4) DSU install pipeline
+     - The former inline Button handler was extracted into a startInstall
+       lambda with an explicit try/catch/finally-style flow. An unexpected
+       exception now produces "DSU installation failed: ..." and always resets
+       the installing flag, so the UI cannot get stuck in "Preparing DSU...".
+     - CancellationException is rethrown so structured cancellation still works.
+     - Progress is throttled and posted through one remembered main-thread
+       Handler instead of allocating a new Handler for every callback.
+     - Notification updates share the same throttle.
+
+  5) UI and resources
+     - The Debug & Diagnostics expansion state was hoisted out of the lazy item
+       so scrolling no longer resets it.
+     - The ROM family grouping is computed once with remember.
+     - SharedPreferences are obtained once per screen.
+     - queryDisplayName() is wrapped in runCatching (some document providers
+       throw SecurityException or IllegalArgumentException on query).
+     - Local-picker error text now correctly mentions .img.gz support.
+     - strings.xml app_name is now actually referenced by the manifest.
+
+  6) File-descriptor hygiene
+     - installLocalDsu closes the content-resolver stream before returning the
+       new size-limit error, avoiding a leaked descriptor on the fast-path
+       rejection branch.
+
+  7) Configuration changes
+     - MainActivity now handles orientation, screen size, screen layout,
+       keyboard and uiMode changes itself. Rotating the device during a long
+       staging/install operation no longer recreates the activity and cancels
+       the running coroutine.
+
+--------------------------------------------------------------------------------
+ 7. PERFORMANCE CHANGES
+--------------------------------------------------------------------------------
+
+   * One `getprop` process instead of one per property at startup.
+   * Cached ROM family grouping (no regroup on every recomposition).
+   * One remembered main-thread Handler for install progress.
+   * Progress/notification updates are coalesced by (percent, phase).
+   * Existing 1 MB streaming buffers and the 256 MB XZ decoder memory cap were
+     retained; the XZ-to-gzip single pass still avoids materializing a raw
+     multi-gigabyte .img when it succeeds.
+   * Removed unused generated/sample files from the source tree (section 8),
+     reducing repository noise and avoiding a Gradle daemon JVM pin.
+
+--------------------------------------------------------------------------------
+ 8. FILES REMOVED
+--------------------------------------------------------------------------------
+
+Removed because they were unused sample/template files, stale helpers or
+generated configuration that could break builds:
+
+  app/src/main/res/xml/backup_rules.xml
+      Android Studio sample backup rules. The manifest sets allowBackup="false"
+      and never referenced this file.
+
+  app/src/main/res/xml/data_extraction_rules.xml
+      Android Studio sample data-extraction rules. Never referenced by the
+      manifest or code.
+
+  app/src/main/res/values/colors.xml
+      Unused XML color palette (purple/teal template values). All Compose colors
+      are defined in MainActivity.kt; no R.color reference existed.
+
+  app/src/main/keepRules/rules.keep
+      Empty AGP 8.3 keep-rule template. All required Shizuku keep rules live in
+      app/proguard-rules.pro.
+
+  gradle/gradle-daemon-jvm.properties
+      Generated `updateDaemonJvm` file pinned to toolchainVersion=25. It could
+      force a JDK 25 download/selection on machines that build with JDK 17, so
+      it was removed to keep builds reproducible with the documented JDK 17
+      requirement.
+
+  get_sha256.sh
+      Stale v1.2.4 helper with a hard-coded 16-entry list and Turkish output.
+      It duplicated the catalog and was already out of date. SHA-256 values and
+      update procedure are documented in ROM_SOURCES.md and are recorded next
+      to each RomOption in MainActivity.kt.
+
+No user-facing feature, ROM entry, icon or license file was removed.
+
+--------------------------------------------------------------------------------
+ 9. DOCUMENTATION AND LICENSE CHANGES
+--------------------------------------------------------------------------------
+
+   * Added this MODIFICATIONS.txt with the GPL-3.0 section 5(a) notice.
+   * Added a modification notice to the MainActivity.kt file header.
+   * Updated README.md with the 1.3.3 feature summary.
+   * Updated ROM_SOURCES.md: 19 entries / 7 families, the three new sources,
+     digest provenance and upstream DSU caveats.
+   * Updated SOURCE_CODE_GUIDE.md for the notification object, size setting,
+     crash guards and current file map.
+   * Updated USER_GUIDE.md for the new Settings switch, notifications and new
+     catalog families.
+   * THIRD_PARTY_NOTICES.md did not need a dependency change: no new library was
+     introduced.
+
+--------------------------------------------------------------------------------
+ 10. BUILD AND VERIFICATION NOTES
+--------------------------------------------------------------------------------
+
+  * Build toolchain used for the 1.3.3 source: JDK 17, Android Gradle Plugin
+    8.3.2, Kotlin 1.9.22, compileSdk 34, minSdk 29, targetSdk 34.
+  * `./gradlew :app:compileDebugKotlin --offline` completed successfully after
+    the changes (Kotlin compile task passed).
+  * No new runtime permission was added. POST_NOTIFICATIONS was already in the
+    manifest. DOWNLOAD_WITHOUT_NOTIFICATION is a normal install-time permission
+    used only to suppress the duplicate DownloadManager notification.
+  * `./gradlew :app:testDebugUnitTest` passes (XZ/gzip size readers).
+  * `./gradlew :app:assembleRelease` produced a signed APK when the release key
+    was supplied through BDSY_KEYSTORE_FILE, KEYSTORE_PASSWORD and KEY_PASSWORD.
+  * The three new catalog digests were cross-checked against the GitHub
+    Releases API asset digest field for the exact tag and filename shown above.
+  * Device-side DSU boot testing was not performed as part of this source
+    change. DSU behavior depends on the device, vendor implementation, Android
+    version and partition layout. A successful download and checksum match do
+    not prove that an image will boot.
+  * When redistributing a modified APK, keep this notice, the GPL license text,
+    the source availability required by the GPL, and the third-party notices.
+
+--------------------------------------------------------------------------------
+ 11. KNOWN LIMITATIONS AND USER WARNINGS
+--------------------------------------------------------------------------------
+
+  * The catalog lists builds without device-compatibility filtering. An
+    arm64-ab label is informational; it does not guarantee that a specific
+    phone can boot the image.
+  * The 4 GB switch removes a bDSU safety guard only. Android's DSU service may
+    still reject large images, and the gzip ISIZE field wraps above 4 GiB.
+  * Notification delivery depends on the Android 13+ POST_NOTIFICATIONS grant
+    and on the user not muting the "DSU operations" channel.
+  * A stalled shell command is killed after 30 minutes. Very large images on
+    extremely slow storage could exceed that window; the UI then reports a
+    timeout instead of hanging.
+  * Some upstream Android 16 GSI releases recommend an upstream "init" file for
+    DSU boot on old devices. bDSU does not install that file automatically.
+    Follow the ROM maintainer's instructions if such a note applies to your
+    device.
+  * Installing a DSU is not risk-free. Keep backups and a recovery path. The
+    developers accept no responsibility for damage, data loss or unbootable
+    devices, as stated in the app's license/disclaimer dialog.
+
+--------------------------------------------------------------------------------
+ 12. REVISION 1.3.3 — PROGRESS, NOTIFICATION AND PREPARATION WORK
+--------------------------------------------------------------------------------
+
+  * The old preparation gauge advanced by whole megabytes and clamped at 45
+    units, so it reached 50% after roughly 45 MB and then froze there for the
+    rest of a multi-GB decompression. `prepareImageFile()` now derives its
+    percentage from the real uncompressed size and maps the complete copy to
+    5-55%, followed by repackaging (5-90%) and launch (92-100%).
+  * `XzSize.kt` parses the XZ Index (footer backward-size field, indicator byte,
+    variable-length record count and per-record uncompressed sizes) and the gzip
+    ISIZE trailer. It performs two small seeks, never decompresses the image, and
+    validates every VLI and the record count before trusting the result.
+  * When the real total is unavailable (`expectedRawBytes <= 0`) both the in-app
+    bar and the notification switch to an indeterminate gauge and report real
+    extracted bytes/speed instead of inventing a percentage.
+  * DownloadMonitor now smooths speed with an exponential moving average, uses
+    DownloadManager's Content-Length or the verified catalog size as the total,
+    and declares a stall only after 10 seconds without new bytes. The UI then
+    shows "Download stalled — waiting for data, still trying…" rather than a
+    silent frozen number. The reference time is reset whenever bytes arrive.
+  * The in-app download percentage, the notification percentage and the
+    notification progress bar are all driven by the same `percent` value and the
+    same `downloadProgressText()` formatter. `BdsuNotifier.progress()` accepts
+    -1 for indeterminate and uses `setProgress(0, 0, true)` in that case.
+  * DownloadManager notifications are hidden (`VISIBILITY_HIDDEN`) so the user
+    sees exactly one gauge. The active download ID and ROM URL are stored in
+    SharedPreferences and restored after process death, so the monitor and the
+    single notification reattach to a running transfer on the next launch.
+  * Retry attempts and terminal failures keep the notification in sync, and
+    every `manager.remove()` call is wrapped in `runCatching`.
+  * Preparation speed: the xz-to-gzip fast path now uses a 1 MB gzip buffer with
+    `Deflater.BEST_SPEED` (level 1), and the shell fallback uses `gzip -1`. This
+    substantially reduces CPU time for the multi-GB repackaging step. The fast
+    path checks free space before writing (75% of the raw size + 128 MB) and
+    deletes a partial `.img.gz` if anything fails, so retries never leave
+    multi-GB debris behind.
+  * Preparation stability: a missing Shizuku binder is detected before any
+    multi-GB work starts; the publisher-checksum probe is capped at 4.5 seconds
+    total with 2.5 s connect/read timeouts; free-space estimates use the exact
+    uncompressed size when available; and `prepareImageFile()` deletes a
+    half-written image on cancellation or failure.
+  * The gzip local fast path now rejects an implausible ISIZE (smaller than the
+    compressed file) and falls back to the counting pipeline, avoiding a wrong
+    `KEY_SYSTEM_SIZE` for images whose size wrapped past 4 GiB.
+  * UI: the progress bar animates with `animateFloatAsState` over 500 ms with a
+    linear easing, so the bar moves continuously between DownloadManager polls.
+  * Icons: `app_icon.png` was replaced and `android:roundIcon` points at it too.
+  * Version: versionCode 116, versionName "1.3.3", applicationId unchanged at
+    com.ayzlol.bdsu.
+  * Verification: `:app:compileDebugKotlin`, `:app:testDebugUnitTest` and
+    `:app:assembleRelease` were run. The release APK is signed with the
+    bdsu-release.keystore key (alias `bdsu`) supplied on this machine. Device
+    DSU boot testing was still not possible in this environment.
+
+
+--------------------------------------------------------------------------------
+ 13. REVISION 1.3.4 — CANCEL CONTROLS
+--------------------------------------------------------------------------------
+
+  * The ongoing progress notification now carries an English "Cancel" action
+    (`BdsuCancelReceiver`). The receiver is not exported and is addressed with
+    an explicit PendingIntent. It cancels the persisted DownloadManager request
+    and/or the live DSU preparation job.
+  * The in-app progress card now shows "Cancel download" while a transfer is
+    active and "Cancel installation" while DSU preparation is running. The old
+    disabled "Preparing DSU..." button was removed.
+  * `BdsuCancellation` keeps a reference to the single install coroutine and a
+    user-cancel flag. Cancellation is cooperative: the streaming loops call
+    `ensureActive()`, partial `.img`/`.img.gz` files are deleted, and the shell
+    bridge kills a running `gzip`/`am` child process.
+  * A cancelled installation or download is reported in the UI and in the
+    single notification in English ("Installation cancelled", "Download
+    cancelled"). A `PREF_CANCEL_REQUESTED` flag lets the download monitor show
+    the correct message after a notification-triggered cancel.
+  * Version: versionCode 117, versionName "1.3.4", applicationId unchanged at
+    com.ayzlol.bdsu.
+
+
+--------------------------------------------------------------------------------
+ 14. REVISION 1.3.5 — USER-SELECTED ROM DOWNLOAD FOLDER
+--------------------------------------------------------------------------------
+
+  * The custom/AOSP ROM downloader now asks the user to choose a folder with
+    the system document picker (SAF, `ACTION_OPEN_DOCUMENT_TREE`) on the first
+    download. The chosen tree is persisted and reused for later ROMs.
+  * DownloadManager cannot write directly to a `content://` tree, so the
+    transfer still uses app storage for the active download, then the verified
+    file is copied into the selected folder with 1 MiB buffers. The copy is
+    removed from app storage afterwards.
+  * The completed ROM is installed from the user-visible SAF document URI
+    (`installLocalDsu`), so the app does not need a second copy for DSU
+    preparation. A failed copy keeps the app-private download installable and
+    reports the error instead of losing the ROM.
+  * The progress card and notification show a separate "Saving ROM" phase with
+    its own percentage. SHA-256 verification still runs before the copy, and
+    the selected folder name is shown in the UI.
+  * Version: versionCode 118, versionName "1.3.5", applicationId unchanged at
+    com.ayzlol.bdsu.
+
+
+--------------------------------------------------------------------------------
+ 15. REVISION 1.3.6 — FAST-MODE DETAIL, CLEANUP AND bDSU NAME VERIFICATION
+--------------------------------------------------------------------------------
+
+  * Fast mode now reports live transfer detail during every long byte-moving
+    phase: bytes done / total, current MB/s, bytes left and an ETA. This covers
+    the xz -> gzip fast path, the .img.gz copy path, the generic decompression
+    path and the native shell gzip compression. The native gzip phase runs in
+    the background and is polled with `stat`; its total is estimated from the
+    usual 75% compression ratio and marked with "~".
+  * Final download failures and each retry now remove the failed DownloadManager
+    request, so its partial file is deleted instead of being orphaned. The
+    four-hour timeout path already did this.
+  * SAF exports are written to a `bDSU-...img.xz.part` document first and
+    renamed to the final name only after the whole copy succeeds. A killed
+    process therefore leaves a clearly marked `.part` file, which is deleted on
+    the next launch or after the next export. A completed export is reused when
+    the app restarts before clearing its DownloadManager record, instead of
+    creating a duplicate (1) file.
+  * Exported ROM names now always contain `bDSU` and a short catalog SHA-256
+    tag, for example
+    `bDSU-PixelOS-16.2-GSI_treble_arm64-ab-20260628_bdsu_d159c20669572276.img.xz`.
+    The 16-hex tag maps the file back to exactly one catalog entry.
+  * Local files whose names contain a `bDSU` marker are verified before
+    install. The app resolves the catalog build from the embedded SHA tag, or
+    from a unique family/version/date match for renamed files (for example a
+    file containing only "PixelOS" resolves to the PixelOS catalog entry).
+    Unmatched or ambiguous bDSU names are refused, and a matching file must
+    pass the full catalog SHA-256 and size check. The verification shows
+    percentage progress. Removing the bDSU marker opts the file out and keeps
+    the old user-owned local-pick behavior.
+  * DSU launch now retries from the official `/data/local/tmp` location when
+    the system DSU service rejects the public Download URI on OEM builds with
+    scoped storage. The fallback is only used after the first documented launch
+    fails, and stale `/data/local/tmp` payloads older than six hours are
+    removed.
+  * SHA-256/MD5 helpers are now cancellation-aware suspend functions and accept
+    an optional progress callback.
+  * Every install now uses a unique DSU slot (`bdsu` plus a hex timestamp)
+    instead of the shared OEM `dsu` slot. A failed OEM install can leave an
+    unreadable `/metadata/gsi/dsu/dsu/lp_metadata`; the native `gsid` then
+    rejects later attempts with "Invalid partition metadata header table size"
+    or "Could not create userdata image". A fresh slot gets a fresh metadata
+    directory and avoids inheriting that broken state. The launch intent passes
+    the slot as `KEY_DSU_SLOT`; the documented and legacy launch paths use the
+    same slot for one install.
+  * Temporary installs now pass `KEY_USERDATA_SIZE=2147483648` explicitly
+    instead of omitting the extra. This matches the AOSP 2 GiB default but
+    prevents Samsung/OEM builds from silently substituting a 24 GiB userdata
+    image, which can make partition creation fail when free space is limited.
+    User-selected values of 3 GiB or more are passed unchanged.
+  * Post-release hardening in the 1.3.6 build: publisher checksum probing no
+    longer calls `InputStream.readNBytes` (API 33), which would fail on Android
+    10-12; it now uses a bounded API 29-safe reader. Notification posting also
+    checks POST_NOTIFICATIONS on Android 13+ and catches SecurityException, so
+    a denied or revoked permission can never crash an install.
+  * Version: versionCode 119, versionName "1.3.6", applicationId unchanged at
+    com.ayzlol.bdsu.
+
+
+--------------------------------------------------------------------------------
+ 16. HOW TO CONTACT / SOURCE AVAILABILITY
+--------------------------------------------------------------------------------
+
+Repository: https://github.com/ayzlol/bdsu-adb-dsu
+
+The complete corresponding source for this modified version is the repository
+contents at version 1.3.6, including this notice. If you received a binary
+without the source, the GPL gives you the right to obtain the corresponding
+source from the distributor.
+
+================================================================================
+ End of MODIFICATIONS.txt
+================================================================================
