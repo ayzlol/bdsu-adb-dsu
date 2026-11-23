@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generated from icon.svg (256x256). The 0.28125 scale maps the artwork into
+     the 72dp adaptive-icon safe zone, centred in the 108dp viewport. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:scaleX="0.28125"
+        android:scaleY="0.28125"
+        android:translateX="18"
+        android:translateY="18">
+        <!-- Outer ring -->
+        <path
+            android:fillColor="@android:color/transparent"
+            android:strokeColor="#757575"
+            android:strokeWidth="6"
+            android:strokeAlpha="0.45"
+            android:pathData="M14,128 a114,114 0 1,0 228,0 a114,114 0 1,0 -228,0" />
+        <!-- Body: antennas, head, shell -->
+        <path
+            android:fillColor="#616161"
+            android:strokeColor="#1E1E1E"
+            android:strokeWidth="5.5"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:pathData="M90 66 L76 40 C74 36 80 33 83 37 L97 63 Z" />
+        <path
+            android:fillColor="#616161"
+            android:strokeColor="#1E1E1E"
+            android:strokeWidth="5.5"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:pathData="M159 63 L173 37 C176 33 182 36 180 40 L166 66 Z" />
+        <path
+            android:fillColor="#616161"
+            android:strokeColor="#1E1E1E"
+            android:strokeWidth="5.5"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:pathData="M54 116 C56 76 88 54 128 54 C168 54 200 76 202 116 Z" />
+        <path
+            android:fillColor="#616161"
+            android:strokeColor="#1E1E1E"
+            android:strokeWidth="5.5"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:pathData="M54 134 L202 134 C203 153 208 168 214 178 C209 187 196 189 183 184 C165 196 147 203 128 205 C109 203 91 196 73 184 C60 189 47 187 42 178 C48 168 53 153 54 134 Z" />
+        <!-- Antenna tips -->
+        <path
+            android:fillColor="#1E1E1E"
+            android:pathData="M74.5,38 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0" />
+        <path
+            android:fillColor="#1E1E1E"
+            android:pathData="M172.5,38 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0" />
+        <!-- Eyes -->
+        <path
+            android:fillColor="#1E1E1E"
+            android:pathData="M85.5,92 a9.5,9.5 0 1,0 19,0 a9.5,9.5 0 1,0 -19,0" />
+        <path
+            android:fillColor="#1E1E1E"
+            android:pathData="M151.5,92 a9.5,9.5 0 1,0 19,0 a9.5,9.5 0 1,0 -19,0" />
+        <!-- A/B slot ticks -->
+        <path
+            android:fillColor="@android:color/transparent"
+            android:strokeColor="#1E1E1E"
+            android:strokeWidth="3.5"
+            android:strokeAlpha="0.75"
+            android:strokeLineCap="round"
+            android:pathData="M64,125 L76,125" />
+        <path
+            android:fillColor="@android:color/transparent"
+            android:strokeColor="#1E1E1E"
+            android:strokeWidth="3.5"
+            android:strokeAlpha="0.75"
+            android:strokeLineCap="round"
+            android:pathData="M180,125 L192,125" />
+        <!-- Shell prompt: < _ > -->
+        <path
+            android:fillColor="@android:color/transparent"
+            android:strokeColor="#1E1E1E"
+            android:strokeWidth="5"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:pathData="M104 154 L82 166 L104 178" />
+        <path
+            android:fillColor="@android:color/transparent"
+            android:strokeColor="#1E1E1E"
+            android:strokeWidth="4.5"
+            android:strokeLineCap="round"
+            android:pathData="M118,178 L138,178" />
+        <path
+            android:fillColor="@android:color/transparent"
+            android:strokeColor="#1E1E1E"
+            android:strokeWidth="5"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:pathData="M152 154 L174 166 L152 178" />
+    </group>
+</vector>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 13+ themed-icon alpha mask: solid body silhouette only. The system
+     tints this with the wallpaper palette, so keep it a plain white fill. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:scaleX="0.28125"
+        android:scaleY="0.28125"
+        android:translateX="18"
+        android:translateY="18">
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M90 66 L76 40 C74 36 80 33 83 37 L97 63 Z" />
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M159 63 L173 37 C176 33 182 36 180 40 L166 66 Z" />
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M54 116 C56 76 88 54 128 54 C168 54 200 76 202 116 Z" />
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M54 134 L202 134 C203 153 208 168 214 178 C209 187 196 189 183 184 C165 196 147 203 128 205 C109 203 91 196 73 184 C60 189 47 187 42 178 C48 168 53 153 54 134 Z" />
+    </group>
+</vector>

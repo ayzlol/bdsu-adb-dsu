@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Bdsu" parent="android:Theme.Material.NoActionBar">
-        <item name="android:colorPrimary">#00D9FF</item>
-        <item name="android:colorBackground">#0A0E1A</item>
-        <item name="android:windowBackground">#0A0E1A</item>
+    <!-- DayNight parent so the window behind Compose matches the system theme.
+         Compose draws the real Material You surface from the wallpaper palette;
+         this only avoids a dark flash when the phone is in light mode. There is
+         no Theme.DeviceDefault.DayNight.NoActionBar, so the action bar is
+         disabled explicitly. -->
+    <style name="Theme.Bdsu" parent="android:Theme.DeviceDefault.DayNight">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowBackground">?android:attr/colorBackground</item>
     </style>
 </resources>
