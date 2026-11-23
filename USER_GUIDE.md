@@ -55,11 +55,11 @@ Settings include:
 
 - **Wi-Fi only download:** enabled by default; controls whether downloads may use metered networks.
 - **Use phone colors:** uses Android dynamic colors on Android 12 and newer when enabled; otherwise the app uses its blue theme.
-- **Allow images larger than 4 GB:** off by default. When off, bDSU rejects an image whose decompressed size would exceed 4 GB. When on, bDSU accepts images up to a 64 GB absolute ceiling. This only changes bDSU's own staging guard; your device's DSU implementation may still refuse large images. The switch is locked while an installation is running.
+- **Large images:** bDSU always allows large GSI images. A 64 GB decompressed-size safety limit remains as a guard against corrupt or hostile streams; your device's DSU implementation may still refuse very large images.
 - **Use SD card for DSU staging:** available when removable app-specific storage is detected. It is off by default. This is for temporary image staging, not for moving DSU userdata.
 - **System DSU Loader screens:** an optional system setting controlled through Shizuku on supported builds.
 
-The catalog currently contains 19 builds across AOSP, DerpFest, ArrowOS, crDroid, LineageOS, PixelOS and VoltageOS families. The three newest entries (PixelOS 16.2, VoltageOS 5.11 EXT4 and crDroid 12.12 Vanilla) use published SHA-256 digests, but a valid digest is not a compatibility guarantee.
+The catalog currently contains 29 builds across 11 ROM families (AOSP, DerpFest, ArrowOS, crDroid, LineageOS, PixelOS, VoltageOS, Clover, Evolution X, Halcyon, YAAP). Catalog entries use published SHA-256 digests, but a valid digest is not a compatibility guarantee.
 
 A device may expose removable storage to the app but not to the Shizuku shell process. If SD staging cannot be read or used, bDSU may retry from internal app-specific storage. Ensure internal storage has enough room for this fallback.
 
@@ -88,7 +88,7 @@ If something fails, note the exact status and stage shown in the app. Open **Deb
 | Shizuku permission required | Start Shizuku and grant or re-grant bDSU permission. |
 | Unsupported local file | Use a readable `.img`, `.img.xz`, or `.img.gz` file and keep its filename extension intact. |
 | Not enough staging space | Free storage, use the optional SD staging setting if available, or choose a smaller image/userdata allocation. |
-| "Decompressed image exceeds the 4 GB safety limit" | Enable **Allow images larger than 4 GB** in Settings if you really need the larger build, and make sure free storage is sufficient. The device's DSU service may still reject it. |
+| "Decompressed image exceeds the 64 GB safety limit" | The image's declared/decompressed size exceeds bDSU's 64 GB safety guard. Verify the file is a genuine GSI and that you have enough free storage; the device's DSU service may also reject very large images. |
 | DSU progress notification is missing | Allow notifications for bDSU on Android 13+, and check that the "DSU operations" channel is not muted. The in-app progress panel always shows the same status. |
 | DSU launch fails | Check DSU availability, the device's vendor build, Shizuku access to the staged path, and the ROM's device requirements. |
 

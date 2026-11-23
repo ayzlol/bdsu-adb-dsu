@@ -28,7 +28,7 @@ The project is licensed under GPL-3.0-or-later; see [`LICENSE`](LICENSE). Third-
 
 ### ROM catalog and selection
 
-`RomOption` describes a catalog item: family, display/version label, Android version, architecture label, expected compressed byte size, release URL, SHA-256 digest, and minimum API metadata. `romCatalog` currently contains 19 entries grouped into seven families in the UI (PixelOS, VoltageOS, and the Android 16 crDroid build were added in 1.3.3). The UI shows the catalog unfiltered; the architecture and labels are informational and should not be treated as an automatic compatibility check.
+`RomOption` describes a catalog item: family, display/version label, Android version, architecture label, expected compressed byte size, release URL, SHA-256 digest, and minimum API metadata. `romCatalog` currently contains 29 entries grouped into 11 families in the UI. The UI shows the catalog unfiltered; the architecture and labels are informational and should not be treated as an automatic compatibility check.
 
 Before a catalog download is queued, `isAllowedRomUrl()` restricts its URL to HTTPS GitHub release-download paths. When updating the catalog, maintainers should independently check that the upstream asset exists and that its URL, file size, digest, architecture, and release information all correspond to the same file. A digest must be a complete 64-character hexadecimal SHA-256 value.
 
@@ -58,7 +58,7 @@ The implementation resolves Shizuku's `newProcess(String[], String[], String)` m
 
 `installFromStream()` and `prepareImageFile()` stage the image in app-specific storage. Internal app storage is the default. If removable app-specific storage is available and the user enables SD staging, that location is used; when the shell cannot access the staged SD file, the flow can copy it to internal staging and retry. The code checks available space where possible, limits decompressed image size, caps XZ decoder memory, and uses buffered streaming rather than loading multi-gigabyte images into memory.
 
-The decompressed-size limit is 4 GB by default and is controlled by the **Allow images larger than 4 GB** setting (`allow_large_images` in `settings` SharedPreferences). When enabled, the limit rises to a 64 GB absolute ceiling. The same check is applied to the single-pass XZ-to-gzip path and to the generic streaming path; local `.img.gz` fast-path candidates are pre-screened with the gzip ISIZE trailer. This setting only controls bDSU's guard — the system DSU service has its own limits.
+A 64 GB decompressed-size safety limit is always enforced. The same check is applied to the single-pass XZ-to-gzip path and to the generic streaming path; local `.img.gz` fast-path candidates are pre-screened with the gzip ISIZE trailer. This guard protects against corrupt or hostile streams; the system DSU service has its own limits.
 
 The launch sequence prefers the documented DSU verification flow:
 
@@ -72,7 +72,7 @@ Persistent userdata is optional. The UI offers presets from 3 GB upward, limited
 
 ### UI and preferences
 
-The interface is built with Jetpack Compose and Material 3. `BdsuTheme()` uses Android dynamic colors on Android 12+ when enabled, and otherwise uses the app's blue color scheme. Settings include Wi-Fi-only downloads, dynamic colors, optional SD staging when available, the system DSU Loader flag, and the 4 GB image-size override. User choices are stored in app `SharedPreferences`.
+The interface is built with Jetpack Compose and Material 3. `BdsuTheme()` uses Android dynamic colors on Android 12+ when enabled, and otherwise uses the app's blue color scheme. Settings include Wi-Fi-only downloads, dynamic colors, optional SD staging when available, and the system DSU Loader flag. Large images are always allowed; a 64 GB decompressed-size safety limit remains. User choices are stored in app `SharedPreferences`.
 
 The Shizuku status is observed through binder/permission listeners and a 3-second safety poll. The UI also includes download/install progress, device diagnostics, and a license/disclaimer dialog. During DSU preparation, the `BdsuNotifier` object mirrors each phase into a single low-importance English notification on the `bdsu_dsu_progress` channel; notification failures never interrupt installation.
 

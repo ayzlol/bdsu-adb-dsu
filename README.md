@@ -9,7 +9,7 @@ With bDSU, you can seamlessly test custom ROMs or your own builds. It also suppo
 * **Correct XZ memory limit** — the decompressor cap is now 96 MiB (KiB units), `android:largeHeap` is gone, and every `XZInputStream` uses the same helper.
 * **Process-wide install engine** — installs survive rotation, theme changes and leaving the screen. A `dataSync` foreground service with a partial wake lock keeps long staging jobs alive.
 * **Real-time progress** — every stage (download, SHA-256, decompression, gzip, copy, launch) shows bytes, MB/s, bytes left and an ETA. The `/data/local/tmp` copy and the SD → internal fallback now report live throughput too.
-* **Large images always allowed** — the "Allow images larger than 4 GB" setting was removed; a 64 GB decompressed-size safety limit remains.
+* **Large images always allowed** — the "Allow images larger than 4 GB" setting was removed; a 64 GB decompressed-size safety limit remains as a guard against corrupt streams.
 * **Quiet update check** — one GitHub release check per 12 hours, ETag-aware, with correct prerelease ordering and a low-importance notification.
 * **Single top progress card** — one card for download, packaging and install; duplicate indicators removed.
 * **Smaller APK** — R8 + resource shrinking in debug and release; the release APK is about 2.1 MB.
@@ -29,9 +29,9 @@ See [`RELEASE_NOTES.md`](RELEASE_NOTES.md) for the full 1.4.1 notes and [`MODIFI
 
 ### What's new in 1.3.5
 * **Choose where custom ROMs are saved** — the custom/AOSP downloader asks for a folder with the system picker and saves the finished ROM there, outside `Android/data`. The app installs directly from that folder; SHA-256 is verified before the move.
-* **19 SHA-256 verified catalog builds** — added PixelOS 16.2, VoltageOS 5.11 (EXT4) and crDroid 12.12 (Android 16).
+* **Hash-verified catalog builds** — catalog ROMs carry upstream SHA-256 digests; bDSU verifies after download and before install.
 * **English DSU progress notifications** — every verification, decompression, staging and launch step is mirrored to a single ongoing notification, so you can leave the app while a large image is prepared.
-* **Adjustable 4 GB image limit** — Settings now has an **Allow images larger than 4 GB** switch. It is off by default, keeping the safe limit; when enabled, images up to 64 GB are accepted (your device's DSU implementation may still refuse them).
+* **Large images always allowed** — the "Allow images larger than 4 GB" setting was removed in 1.4.1; a 64 GB decompressed-size safety limit remains.
 * **Cancel from the app or the notification** — both the in-app progress card and the ongoing notification now have an English **Cancel** action for downloads and DSU preparation.
 * **Stability & performance work** — cached system-property reads, a 30-minute shell watchdog, crash-guarded download monitoring and install pipeline, throttled progress updates, and fewer process spawns.
 * **Real progress instead of a frozen 50%** — the preparation gauge now reads the exact uncompressed size from the XZ/gzip metadata, reports real bytes and speed, and warns when a download has received no data for 10 seconds.

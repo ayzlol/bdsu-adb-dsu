@@ -4,17 +4,21 @@ This document records how the current bDSU catalog is organized and what maintai
 
 ## Current catalog sources
 
-The current catalog contains 19 entries grouped into seven families. The release assets are hosted in these upstream GitHub repositories:
+The current catalog contains 29 entries grouped into 11 families. The release assets are hosted in these upstream GitHub repositories:
 
 | Family | Upstream repository | Catalog entries |
 |---|---|---|
 | AOSP | [`ponces/treble_aosp`](https://github.com/ponces/treble_aosp) | Android 15 and 16 builds; vanilla and GApps variants. |
-| DerpFest | [`KoysX/treble_DerpFest_GSI`](https://github.com/KoysX/treble_DerpFest_GSI) | Android 14 arm64 bgN Full, Mini, and Pico builds. |
+| DerpFest | [`KoysX/treble_DerpFest_GSI`](https://github.com/KoysX/treble_DerpFest_GSI), [`Doze-off/DerpFest_treble`](https://github.com/Doze-off/DerpFest_treble) | Android 14 (KoysX) and Android 16 (Doze-off) builds. |
 | ArrowOS | [`naz664/ArrowOS_gsi`](https://github.com/naz664/ArrowOS_gsi) | Android 13 arm64 bgN/bvN builds, including Slim. |
 | crDroid | [`naz664/crDroid_gsi`](https://github.com/naz664/crDroid_gsi), [`Doze-off/crdroid_gsi_treble`](https://github.com/Doze-off/crdroid_gsi_treble) | crDroid 10.13 Android 15 builds from naz664; crDroid 12.12 Android 16 Vanilla from Doze-off. |
 | LineageOS | [`Doze-off/lineage_treble`](https://github.com/Doze-off/lineage_treble) | LineageOS 23.2 Android 16 vanilla, microG, and GApps builds. |
-| PixelOS | [`Doze-off/PixelOS_GSI_treble`](https://github.com/Doze-off/PixelOS_GSI_treble) | PixelOS 16.2 Android 16 arm64-ab build (added in 1.3.3). |
-| VoltageOS | [`Doze-off/voltage_a16_treble`](https://github.com/Doze-off/voltage_a16_treble) | VoltageOS 5.11 Android 16 arm64-ab EXT4 build (added in 1.3.3). |
+| PixelOS | [`Doze-off/PixelOS_GSI_treble`](https://github.com/Doze-off/PixelOS_GSI_treble) | PixelOS 16.2 Android 16 arm64-ab build. |
+| VoltageOS | [`Doze-off/voltage_a16_treble`](https://github.com/Doze-off/voltage_a16_treble) | VoltageOS 5.11 Android 16 arm64-ab EXT4 build. |
+| Clover | [`Doze-off/Clover_treble`](https://github.com/Doze-off/Clover_treble) | Clover 3.11 Android 16 arm64-ab Vanilla/GApps builds. |
+| Evolution X | [`Doze-off/EvoX_treble`](https://github.com/Doze-off/EvoX_treble) | Evolution X 11.11 Android 16 arm64-ab Vanilla/GApps builds. |
+| Halcyon | [`Doze-off/halcyon_treble`](https://github.com/Doze-off/halcyon_treble) | Halcyon 15.1 Android 15 arm64 bgN/bvN builds. |
+| YAAP | [`Doze-off/YAAP_treble`](https://github.com/Doze-off/YAAP_treble) | YAAP Android 16 arm64-ab Vanilla/GApps builds. |
 
 These are third-party projects; bDSU does not build or publish the ROM images. Upstream repositories and their release assets can change, disappear, or be replaced. Check the upstream release page and the exact asset before relying on an entry.
 
@@ -44,11 +48,10 @@ Before queuing a catalog download, the app accepts only HTTPS URLs whose host is
 
 The app checks the downloaded asset's expected size and catalog SHA-256. It checks the digest again before installation. It also probes for publisher-hosted companion checksum files at install time; those checks are optional and the catalog digest remains the required integrity reference for catalog installs. A valid catalog digest is 64 hexadecimal characters.
 
-The decompressed-image safety cap is 4 GB by default. Users can raise it to the
-absolute 64 GB ceiling from **Settings → Allow images larger than 4 GB**. This
-switch only changes bDSU's own streaming guard; the device's DSU service may
-still reject large images, and compressed-image fast paths re-check the real
-decompressed byte count. See [`MODIFICATIONS.txt`](MODIFICATIONS.txt) section 5.
+The decompressed-image safety cap is 64 GB and is always enforced. This guard
+protects against corrupt or hostile streams; the device's DSU service may still
+reject large images, and compressed-image fast paths re-check the real
+decompressed byte count. See [`MODIFICATIONS.txt`](MODIFICATIONS.txt) section 0.
 
 ## Updating an entry
 
