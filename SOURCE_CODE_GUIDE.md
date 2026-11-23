@@ -15,7 +15,7 @@ The project is licensed under GPL-3.0-or-later; see [`LICENSE`](LICENSE). Third-
 | `build.gradle.kts`, `settings.gradle.kts` | Root Gradle plugin and project configuration. |
 | `gradle/libs.versions.toml` | Version catalog for Gradle plugins and libraries. |
 | `app/proguard-rules.pro` | Keep rules required for Shizuku under release shrinking/obfuscation. |
-| `MODIFICATIONS.txt` | GPL-3.0 section 5(a) modification notice and detailed change log for 1.3.3. |
+| `MODIFICATIONS.txt` | GPL-3.0 section 5(a) modification notice and detailed change log. |
 | `USER_GUIDE.md` | End-user setup and usage guidance. |
 | `BUILDING.md` | Build requirements and commands. |
 | `ROM_SOURCES.md` | Notes about ROM catalog sources and release assets. |
@@ -24,7 +24,7 @@ The project is licensed under GPL-3.0-or-later; see [`LICENSE`](LICENSE). Third-
 
 ### Device information
 
-`DeviceProfile` and `detectDevice()` collect device model, Android API level, primary ABI, available data storage, Treble/A-B indicators, bootloader state, and whether a DSU image appears to be loaded. System properties are read from one cached `getprop` snapshot (the 1.3.3 change replaced one process per property), and storage/property failures fall back to safe defaults instead of throwing. This information is displayed for the user and diagnostics; **the current UI does not filter catalog entries by device compatibility**. A listed image is not a guarantee that it will boot on a particular device.
+`DeviceProfile` and `detectDevice()` collect device model, Android API level, primary ABI, available data storage, Treble/A-B indicators, bootloader state, and whether a DSU image appears to be loaded. System properties are read from one cached `getprop` snapshot, and storage/property failures fall back to safe defaults instead of throwing. This information is displayed for the user and diagnostics; **the current UI does not filter catalog entries by device compatibility**. A listed image is not a guarantee that it will boot on a particular device.
 
 ### ROM catalog and selection
 
@@ -38,7 +38,7 @@ Catalog assets are downloaded with Android `DownloadManager` into app-specific e
 
 After download completion, the app checks the expected file size and SHA-256 when the catalog entry contains a valid digest. Installation performs another size and SHA-256 check immediately before staging, so a changed or truncated file is rejected. During installation, the app also looks for publisher-hosted companion checksum files; when a matching checksum is found, it is checked against the already-computed digest. If no publisher checksum is available, the catalog SHA-256 remains the integrity reference. A catalog download without a valid SHA-256 is not installable.
 
-The download monitor runs inside a guarded coroutine: DownloadManager/cursor failures are reported in the status panel instead of escaping as an app crash. The 1.3.3 notification integration mirrors install phases into a low-importance "DSU operations" channel; see [`MODIFICATIONS.txt`](MODIFICATIONS.txt) section 4.
+The download monitor runs inside a guarded coroutine: DownloadManager/cursor failures are reported in the status panel instead of escaping as an app crash. Install phases are mirrored into a low-importance "DSU operations" notification channel; see [`MODIFICATIONS.txt`](MODIFICATIONS.txt) for the change log.
 
 Local files are intentionally treated differently: the user selects and supplies them, so the app does not block local installation based on a catalog or publisher checksum. A possible catalog match is informational only, not a verification claim.
 
@@ -50,7 +50,7 @@ The selected URI is retained with a persistable read permission when the documen
 
 ### Shizuku shell boundary
 
-`Shell` checks Shizuku binder and permission state before privileged operations. It invokes Shizuku's process implementation and runs shell commands through that authorized process; the app does not implement root exploits or bootloader privilege bypasses. The shell bridge merges stderr into stdout, reads output on a worker thread, limits captured output, destroys the process if its coroutine is cancelled, and (since 1.3.3) kills a command that exceeds a 30-minute watchdog window so a stalled `gzip`/`am` child cannot hang the installation forever.
+`Shell` checks Shizuku binder and permission state before privileged operations. It invokes Shizuku's process implementation and runs shell commands through that authorized process; the app does not implement root exploits or bootloader privilege bypasses. The shell bridge merges stderr into stdout, reads output on a worker thread, limits captured output, destroys the process if its coroutine is cancelled, and kills a command that exceeds a 30-minute watchdog window so a stalled `gzip`/`am` child cannot hang the installation forever.
 
 The implementation resolves Shizuku's `newProcess(String[], String[], String)` method reflectively. The Shizuku keep rules in `app/proguard-rules.pro` are significant for minified release builds. The manifest's Shizuku API permission and provider declaration are also needed for binder delivery and permission requests.
 

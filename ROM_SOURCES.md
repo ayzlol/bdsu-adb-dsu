@@ -22,9 +22,9 @@ The current catalog contains 29 entries grouped into 11 families. The release as
 
 These are third-party projects; bDSU does not build or publish the ROM images. Upstream repositories and their release assets can change, disappear, or be replaced. Check the upstream release page and the exact asset before relying on an entry.
 
-### 1.3.3 digest provenance
+### Digest provenance
 
-The three builds added in 1.3.3 use the SHA-256 digest reported by the GitHub
+The following builds use the SHA-256 digest reported by the GitHub
 Releases API for the exact uploaded asset (`assets[].digest`), which is the
 digest of the bytes served by the release-download URL. The values are:
 
