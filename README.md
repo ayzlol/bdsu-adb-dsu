@@ -17,7 +17,7 @@ More detail in [`screenshots/README.md`](screenshots/README.md).
 * **Large images always allowed** — the "Allow images larger than 4 GB" setting was removed; a 64 GB decompressed-size safety limit remains as a guard against corrupt streams.
 * **Quiet update check** — one GitHub release check per 12 hours, ETag-aware, with correct prerelease ordering and a low-importance notification.
 * **Single top progress card** — one card for download, packaging and install; duplicate indicators removed.
-* **Smaller APK** — R8 + resource shrinking in debug and release; the release APK is about 2.1 MB.
+* **Smaller APK** — R8 + resource shrinking in debug and release; the release APK is about 1.97 MB.
 * **New adaptive icon** — themed/monochrome launcher icon and a tinted Android mark for the GSI catalog.
 
 See [`RELEASE_NOTES.md`](RELEASE_NOTES.md) for the full 1.4.1 notes and [`MODIFICATIONS.txt`](MODIFICATIONS.txt) for the complete change notice.
