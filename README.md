@@ -2,6 +2,14 @@
 
 > 💡 **Note:** Downloads include automatic **hash verification** to guarantee file integrity!
 
+## Screenshots
+
+| Main screen | GSI ROM catalog | Settings |
+|---|---|---|
+| <img src="screenshots/01-main-screen.jpg" width="240" alt="bDSU main screen"> | <img src="screenshots/02-gsi-rom-catalog.jpg" width="240" alt="bDSU GSI ROM catalog"> | <img src="screenshots/03-settings.jpg" width="240" alt="bDSU settings"> |
+
+More detail in [`screenshots/README.md`](screenshots/README.md).
+
 ### What's new in 1.4.1
 * **Correct XZ memory limit** — the decompressor cap is now 96 MiB (KiB units), `android:largeHeap` is gone, and every `XZInputStream` uses the same helper.
 * **Process-wide install engine** — installs survive rotation, theme changes and leaving the screen. A `dataSync` foreground service with a partial wake lock keeps long staging jobs alive.
